@@ -1,0 +1,56 @@
+{
+  "name": "MST - Marty Solar Tracker",
+  "short_name": "MST",
+  "description": "Offline-first aplikace pro sledování práce na solárních elektrárnách",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#007AFF",
+  "lang": "cs",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Nová práce",
+      "short_name": "Práce",
+      "description": "Otevřít pracovní režim",
+      "url": "/?tab=work",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Projekty",
+      "short_name": "Projekty",
+      "description": "Zobrazit projekty",
+      "url": "/?tab=projects",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
