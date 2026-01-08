@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper: Je uživatel přihlášen?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Uživatelské soubory
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Chat přílohy
+    match /chat/{conversationId}/{allPaths=**} {
+      // Všichni přihlášení mohou číst (podrobné ověření v Firestore)
+      allow read: if isAuthenticated();
+      // Přihlášení mohou nahrávat (max 10MB)
+      allow write: if isAuthenticated() && 
+        request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Projektové soubory
+    match /projects/{projectId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+        request.resource.size < 50 * 1024 * 1024;
+    }
+  }
+}

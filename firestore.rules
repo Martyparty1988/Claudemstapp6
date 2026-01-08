@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper: Je uživatel přihlášen?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper: Je uživatel vlastníkem?
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Helper: Je uživatel členem?
+    function isMember(memberIds) {
+      return request.auth.uid in memberIds;
+    }
+    
+    // Users kolekce
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+    
+    // Projects kolekce
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && 
+        (resource.data.createdBy == request.auth.uid || 
+         request.auth.uid in resource.data.memberIds);
+      
+      // Tables sub-kolekce
+      match /tables/{tableId} {
+        allow read, write: if isAuthenticated();
+      }
+      
+      // Work records sub-kolekce  
+      match /workRecords/{recordId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && 
+          resource.data.workerId == request.auth.uid;
+      }
+    }
+    
+    // Conversations (chat)
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && 
+        request.auth.uid in resource.data.participantIds;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        request.auth.uid in resource.data.participantIds;
+      
+      // Messages sub-kolekce
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
+        allow create: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
+        allow update, delete: if isAuthenticated() && 
+          resource.data.senderId == request.auth.uid;
+      }
+      
+      // Typing indicators sub-kolekce
+      match /typing/{oderId} {
+        allow read, write: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
+      }
+    }
+    
+    // Sync queue (pro offline-first)
+    match /syncQueue/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
